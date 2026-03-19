@@ -445,8 +445,16 @@ async function handleUpload(file) {
 }
 
 function parseXML(xmlStr) {
+  // Strip Apple Health DOCTYPE block — causes DOMParser to fail
+  const cleaned = xmlStr.replace(/<!DOCTYPE[\s\S]*?]>/m, '');
   const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlStr, 'text/xml');
+  const doc = parser.parseFromString(cleaned, 'text/xml');
+  // Check for parse error
+  const parseErr = doc.querySelector('parsererror');
+  if (parseErr) {
+    console.error('XML parse error:', parseErr.textContent);
+    throw new Error('XML konnte nicht gelesen werden. Bitte sicherstellen dass es die originale export.xml ist.');
+  }
   const nodes = doc.querySelectorAll('Workout');
   const records = doc.querySelectorAll('Record');
   const hrvMap = {}, rhrMap = {}, sleepMap = {}, vo2Map = {}, respMap = {};
