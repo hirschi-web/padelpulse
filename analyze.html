@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PadelPulse v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --s1: #10101c;
+  --s2: #16162a;
+  --s3: #1e1e36;
+  --border: #252540;
+  --border2: #32325a;
+  --accent: #e8ff47;
+  --blue: #47c4ff;
+  --orange: #ff7c47;
+  --purple: #b347ff;
+  --green: #47ff8c;
+  --red: #ff4747;
+  --text: #f0f0fa;
+  --muted: #6060a0;
+  --muted2: #9090c0;
+  --z1: #3b82f6; --z2: #22c55e; --z3: #f59e0b; --z4: #f97316; --z5: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── SETUP SCREEN ── */
+#setup-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  gap: 24px;
+}
+.setup-logo { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+.setup-logo span { color: var(--accent); }
+.setup-sub { color: var(--muted2); font-size: 13px; margin-bottom: 24px; text-align: center; }
+
+.setup-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 520px;
+  width: 100%;
+}
+.setup-card h2 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+.setup-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.setup-input {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.setup-input:focus { border-color: var(--accent); }
+.setup-input::placeholder { color: var(--muted); }
+.setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-primary {
+  background: var(--accent); color: #080810;
+  border: none; border-radius: 10px;
+  padding: 12px 24px; font-family: 'DM Mono', monospace;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  width: 100%; transition: all 0.2s; margin-top: 4px;
+}
+.btn-primary:hover { background: #d4eb30; transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent; color: var(--muted2);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 20px; font-family: 'DM Mono', monospace;
+  font-size: 12px; cursor: pointer; transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--purple); color: var(--purple); }
+.setup-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--muted); font-size: 11px; }
+.setup-divider::before, .setup-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.info-box { background: var(--s2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 11px; color: var(--muted2); line-height: 1.7; margin-top: 8px; }
+.info-box a { color: var(--blue); text-decoration: none; }
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,16,0.9); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: center; gap: 16px; height: 56px;
+}
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; }
+.logo span { color: var(--accent); }
+.header-workout-select {
+  flex: 1; max-width: 320px;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  padding: 6px 12px; outline: none; cursor: pointer;
+}
+.header-workout-select:focus { border-color: var(--accent); }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.sync-btn {
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--muted2); border-radius: 8px;
+  padding: 6px 14px; font-family: 'DM Mono', monospace;
+  font-size: 11px; cursor: pointer; transition: all 0.2s;
+}
+.sync-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sync-btn.loading { border-color: var(--blue); color: var(--blue); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+/* ── MAIN LAYOUT ── */
+#app { display: none; }
+.main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 18px; padding: 22px;
+  position: relative; overflow: hidden;
+}
+.card-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.card-sub { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+.card-accent-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+
+/* ── GRID ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media(max-width:1000px) { .grid-3,.grid-4 { grid-template-columns: 1fr 1fr; } }
+@media(max-width:700px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } .main { padding: 12px; } }
+
+/* ── STAT CHIPS ── */
+.stat-chip { background: var(--s2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+.stat-chip-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.stat-chip-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; line-height: 1; }
+.stat-chip-unit { font-size: 12px; color: var(--muted2); margin-left: 2px; }
+.stat-chip-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.stat-chip-trend { font-size: 11px; margin-top: 4px; }
+
+/* ── RECOVERY RING ── */
+.recovery-wrap { display: flex; gap: 20px; align-items: center; }
+.ring-outer { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.ring-outer svg { transform: rotate(-90deg); }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+.ring-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.rec-rows { flex: 1; }
+.rec-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.rec-row:last-child { border: none; }
+.rec-k { color: var(--muted2); }
+
+/* ── ZONES ── */
+.zones-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; margin: 10px 0; }
+.zone-seg { border-radius: 2px; }
+.zones-leg { display: flex; flex-wrap: wrap; gap: 10px; }
+.zone-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted2); }
+.zone-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── LOAD METER ── */
+.load-bar { background: var(--s3); border-radius: 6px; height: 10px; overflow: hidden; margin: 8px 0; }
+.load-fill { height: 100%; border-radius: 6px; transition: width 1s ease; }
+
+/* ── SLEEP STAGES ── */
+.sleep-stages { display: flex; height: 20px; border-radius: 6px; overflow: hidden; gap: 2px; margin: 10px 0; }
+.sleep-seg { border-radius: 2px; }
+
+/* ── CANVAS ── */
+canvas { width: 100% !important; display: block; }
+
+/* ── AI COACH ── */
+.ai-box {
+  background: linear-gradient(135deg, rgba(179,71,255,0.08), rgba(71,196,255,0.05));
+  border: 1px solid rgba(179,71,255,0.3);
+  border-radius: 14px; padding: 18px;
+  font-size: 12px; line-height: 1.8; color: var(--muted2);
+  min-height: 80px;
+}
+.ai-box strong { color: var(--text); }
+.ai-box .ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ai-tag { background: rgba(179,71,255,0.2); color: var(--purple); font-size: 9px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.ai-btn {
+  background: rgba(179,71,255,0.15); border: 1px solid rgba(179,71,255,0.4);
+  color: var(--purple); border-radius: 8px; padding: 8px 16px;
+  font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer;
+  transition: all 0.2s; margin-top: 12px; display: inline-block;
+}
+.ai-btn:hover { background: rgba(179,71,255,0.25); }
+.ai-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-thinking { color: var(--muted); font-style: italic; }
+
+/* ── WORKOUT LIST ── */
+.workout-list { display: flex; flex-direction: column; gap: 8px; }
+.wl-item {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: all 0.15s;
+}
+.wl-item:hover, .wl-item.active { border-color: var(--accent); background: rgba(232,255,71,0.03); }
+.wl-badge { padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; min-width: 64px; text-align: center; }
+.badge-p { background: rgba(232,255,71,.15); color: var(--accent); border: 1px solid rgba(232,255,71,.3); }
+.badge-s { background: rgba(71,196,255,.15); color: var(--blue); border: 1px solid rgba(71,196,255,.3); }
+.badge-o { background: rgba(96,96,160,.15); color: var(--muted2); border: 1px solid var(--border); }
+.wl-meta { flex: 1; }
+.wl-date { font-size: 12px; }
+.wl-stats { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.wl-hr { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+
+/* ── PADEL INSIGHT ── */
+.padel-insight { background: rgba(232,255,71,0.04); border: 1px solid rgba(232,255,71,0.15); border-radius: 12px; padding: 14px 16px; font-size: 11px; color: var(--muted2); line-height: 1.7; }
+.padel-insight strong { color: var(--accent); }
+
+/* ── VITALS ALERT ── */
+.vitals-alert { background: rgba(255,71,71,0.08); border: 1px solid rgba(255,71,71,0.25); border-radius: 10px; padding: 10px 14px; font-size: 11px; color: #ff9999; margin-top: 8px; }
+
+/* ── FITNESS SCORE ── */
+.fitness-score-wrap { display: flex; flex-direction: column; gap: 10px; }
+.fs-row { display: flex; align-items: center; gap: 10px; }
+.fs-label { font-size: 11px; color: var(--muted2); min-width: 130px; }
+.fs-bar-wrap { flex: 1; background: var(--s3); border-radius: 4px; height: 8px; overflow: hidden; }
+.fs-bar { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.fs-val { font-size: 11px; font-weight: 500; min-width: 36px; text-align: right; }
+
+/* ── EMPTY / LOADING ── */
+.empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
+.loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.fade-up { animation: fadeUp .35s ease forwards; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--s1); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SETUP SCREEN ═══════════════ -->
+<div id="setup-screen">
+  <div class="setup-logo">Padel<span>Pulse</span> <span style="font-size:13px;color:var(--muted);font-weight:400">v2</span></div>
+  <div class="setup-sub">Apple Watch Ultra 2 · Training Analytics · GitHub Sync</div>
+
+  <div class="setup-card">
+    <h2>⚙️ GitHub Konfiguration</h2>
+    <div class="setup-label">GitHub Username</div>
+    <input class="setup-input" id="cfg-user" placeholder="dein-username" />
+    <div class="setup-label">Repository Name</div>
+    <input class="setup-input" id="cfg-repo" placeholder="padelpulse-data" />
+    <div class="setup-label">Personal Access Token <span style="color:var(--muted)">(wird nur lokal gespeichert)</span></div>
+    <input class="setup-input" id="cfg-token" type="password" placeholder="ghp_xxxxxxxxxxxx" />
+    <div class="setup-row">
+      <div>
+        <div class="setup-label">Dein Alter</div>
+        <input class="setup-input" id="cfg-age" type="number" placeholder="38" style="margin-bottom:0" />
+      </div>
+      <div>
+        <div class="setup-label">Max. Herzfrequenz</div>
+        <input class="setup-input" id="cfg-maxhr" type="number" placeholder="182" style="margin-bottom:0" />
+      </div>
+    </div>
+    <div style="margin-top:16px"></div>
+    <button class="btn-primary" onclick="saveConfig()">Verbinden & Workouts laden</button>
+
+    <div class="setup-divider">oder</div>
+    <button class="btn-ghost" style="width:100%" onclick="loadDemo()">▶ Demo mit Beispieldaten starten</button>
+
+    <div class="info-box" style="margin-top:16px">
+      <strong style="color:var(--text)">Token erstellen:</strong> github.com → Settings → Developer Settings → Personal Access Tokens (classic) → Scope: <strong style="color:var(--accent)">repo</strong> ✓<br>
+      <strong style="color:var(--text)">Token ist sicher:</strong> Wird nur in localStorage deines Browsers gespeichert, nie übertragen.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<div id="app">
+  <header>
+    <div class="logo">Padel<span>Pulse</span></div>
+    <select class="header-workout-select" id="workout-select" onchange="loadWorkout(this.value)">
+      <option value="">— Workout auswählen —</option>
+    </select>
+    <div class="header-right">
+      <button class="sync-btn" id="sync-btn" onclick="syncFromGitHub()">⟳ Sync</button>
+      <div class="status-dot" id="status-dot" style="background:var(--muted)"></div>
+      <button class="btn-ghost" style="padding:5px 12px;font-size:11px" onclick="resetConfig()">⚙</button>
+    </div>
+  </header>
+
+  <div class="main" id="main-content">
+    <div class="empty">Workout auswählen um Analyse zu starten</div>
+  </div>
+</div>
+
+<script>
+// ═══════════ CONFIG ═══════════
+let CFG = { user: '', repo: '', token: '', age: 38, maxHR: 182 };
+let allWorkouts = [];
+let currentWorkout = null;
+
+function saveConfig() {
+  CFG.user  = document.getElementById('cfg-user').value.trim();
+  CFG.repo  = document.getElementById('cfg-repo').value.trim();
+  CFG.token = document.getElementById('cfg-token').value.trim();
+  CFG.age   = parseInt(document.getElementById('cfg-age').value) || 38;
+  CFG.maxHR = parseInt(document.getElementById('cfg-maxhr').value) || (220 - CFG.age);
+  if (!CFG.user || !CFG.repo || !CFG.token) { alert('Bitte alle Felder ausfüllen.'); return; }
+  localStorage.setItem('pp_cfg', JSON.stringify(CFG));
+  showApp();
+  syncFromGitHub();
+}
+
+function resetConfig() {
+  if (!confirm('Konfiguration zurücksetzen?')) return;
+  localStorage.removeItem('pp_cfg');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+}
+
+// ═══════════ GITHUB API ═══════════
+async function syncFromGitHub() {
+  const btn = document.getElementById('sync-btn');
+  const dot = document.getElementById('status-dot');
+  btn.classList.add('loading'); btn.textContent = '⟳ Lädt...';
+  dot.style.background = 'var(--orange)';
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${CFG.user}/${CFG.repo}/contents/workouts`,
+      { headers: { Authorization: `token ${CFG.token}`, Accept: 'application/vnd.github+json' } }
+    );
+    if (!res.ok) throw new Error(`GitHub ${res.status}: ${res.statusText}`);
+    const files = await res.json();
+
+    // Filter JSON files, sort by name (timestamp) descending
+    const jsonFiles = files
+      .filter(f => f.name.endsWith('.json'))
+      .sort((a, b) => b.name.localeCompare(a.name));
+
+    // Populate select
+    const sel = document.getElementById('workout-select');
+    sel.innerHTML = '<option value="">— Workout auswählen —</option>';
+    jsonFiles.forEach(f => {
+      const label = formatFilename(f.name);
+      const opt = document.createElement('option');
+      opt.value = f.download_url;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+
+    // Auto-load newest
+    if (jsonFiles.length > 0) {
+      sel.value = jsonFiles[0].download_url;
+      await loadWorkout(jsonFiles[0].download_url);
+    }
+
+    dot.style.background = 'var(--green)';
+    btn.textContent = `⟳ ${jsonFiles.length} Workouts`;
+  } catch(e) {
+    dot.style.background = 'var(--red)';
+    btn.textContent = '⟳ Fehler';
+    showError(e.message);
+  }
+  btn.classList.remove('loading');
+}
+
+async function loadWorkout(url) {
+  if (!url) return;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    currentWorkout = data;
+    renderAll(data);
+  } catch(e) { showError('Workout konnte nicht geladen werden: ' + e.message); }
+}
+
+function formatFilename(name) {
+  // 2026-03-17T18-30-00_PadelTennis.json → 17.03.2026 · 18:30 · Padel Tennis
+  const m = name.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})/);
+  const type = name.replace(/^[\dT:\-]+_?/, '').replace('.json','').replace(/([A-Z])/g,' $1').trim();
+  if (m) return `${m[3]}.${m[2]}.${m[1]} · ${m[4]}:${m[5]} · ${type}`;
+  return name.replace('.json','');
+}
+
+// ═══════════ DEMO DATA ═══════════
+function loadDemo() {
+  showApp();
+  const workouts = generateDemoWorkouts(15);
+  allWorkouts = workouts;
+
+  const sel = document.getElementById('workout-select');
+  sel.innerHTML = '<option value="">— Workout auswählen —</option>';
+  workouts.forEach((w, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${w.date.slice(8,10)}.${w.date.slice(5,7)}.${w.date.slice(0,4)} · ${w.date.slice(11,16)} · ${w.type}`;
+    sel.appendChild(opt);
+  });
+
+  // Override loadWorkout for demo
+  document.getElementById('workout-select').onchange = function() {
+    const idx = parseInt(this.value);
+    if (!isNaN(idx)) { currentWorkout = allWorkouts[idx]; renderAll(currentWorkout); }
+  };
+
+  document.getElementById('status-dot').style.background = 'var(--blue)';
+  document.getElementById('sync-btn').textContent = '▶ Demo';
+
+  sel.value = 0;
+  currentWorkout = workouts[0];
+  renderAll(workouts[0]);
+}
+
+function generateDemoWorkouts(n) {
+  const types = ['Padel Tennis','Padel Tennis','Krafttraining','Padel Tennis','Krafttraining','Padel Tennis','Padel Tennis','Krafttraining','Padel Tennis','Krafttraining','Padel Tennis','Krafttraining','Padel Tennis','Padel Tennis','Krafttraining'];
+  return types.slice(0,n).map((type, i) => {
+    const d = new Date(); d.setDate(d.getDate() - i * 2 - Math.floor(Math.random()*2));
+    const isPadel = type === 'Padel Tennis';
+    const avgHR = isPadel ? 148 + Math.round(Math.random()*22) : 118 + Math.round(Math.random()*18);
+    const maxHR = avgHR + 18 + Math.round(Math.random()*14);
+    const dur = isPadel ? 75 + Math.round(Math.random()*30) : 52 + Math.round(Math.random()*20);
+    const hrv = 40 + Math.round(Math.random()*22) - (i%5===0?10:0);
+    const rhr = 50 + Math.round(Math.random()*8);
+    const sleep = { total_h: +(6.5+Math.random()*2).toFixed(1), rem_h: +(1.2+Math.random()*.6).toFixed(1), deep_h: +(0.8+Math.random()*.5).toFixed(1), awake_min: Math.round(8+Math.random()*15) };
+    // Generate HR series (every 30s)
+    const hr_series = [];
+    let hr = 90;
+    for (let t = 0; t <= dur*60; t += 30) {
+      if (isPadel) {
+        // Padel: spikes every ~90s
+        const inPoint = (t % 90) < 12;
+        const target = inPoint ? avgHR + 20 + Math.random()*15 : avgHR - 15 + Math.random()*10;
+        hr += (target - hr) * 0.3 + (Math.random()-0.5)*4;
+      } else {
+        // Strength: set/rest pattern
+        const inSet = (t % 180) < 60;
+        const target = inSet ? avgHR + 15 : avgHR - 20;
+        hr += (target - hr) * 0.25 + (Math.random()-0.5)*3;
+      }
+      hr = Math.max(90, Math.min(maxHR, hr));
+      hr_series.push({ t, bpm: Math.round(hr) });
+    }
+    // HRR: simulate 2 min post-workout
+    const hrr_series = [];
+    let hrrHR = maxHR - 5;
+    for (let t = 0; t <= 120; t += 10) {
+      hrrHR -= (hrrHR - rhr) * 0.08 + Math.random()*1.5;
+      hrr_series.push({ t, bpm: Math.round(hrrHR) });
+    }
+    return {
+      timestamp: d.toISOString().slice(0,19),
+      date: d.toISOString().slice(0,16).replace('T',' '),
+      type, duration_min: dur,
+      calories: Math.round(dur * (avgHR/CFG.maxHR) * 7.5),
+      avg_hr: avgHR, max_hr: maxHR, min_hr: Math.round(avgHR - 35),
+      hrr_1min: 22 + Math.round(Math.random()*14),
+      hrr_2min: 38 + Math.round(Math.random()*18),
+      hrr_series,
+      trimp: Math.round(dur * (avgHR/CFG.maxHR) * 2.8),
+      vo2max: +(48 + Math.random()*5 - i*0.06).toFixed(1),
+      resting_hr: rhr, hrv_morning: hrv,
+      resp_rate: +(13.5 + Math.random()*2).toFixed(1),
+      wrist_temp_delta: +((Math.random()-.5)*0.8).toFixed(2),
+      sleep_prev: sleep,
+      hr_series,
+      zones: estimateZones(avgHR, maxHR)
+    };
+  });
+}
+
+// ═══════════ ZONE CALCULATION ═══════════
+function estimateZones(avgHR, maxHR) {
+  const i = avgHR / CFG.maxHR;
+  if (i < .60) return [70,18,8,3,1];
+  if (i < .65) return [28,42,20,7,3];
+  if (i < .72) return [8,30,40,17,5];
+  if (i < .80) return [4,12,38,35,11];
+  if (i < .87) return [2,7,22,45,24];
+  return [1,4,12,33,50];
+}
+
+function calcRecovery(hrv, rhr, baseHRV=45, baseRHR=55) {
+  if (!hrv) return null;
+  const hrvS = Math.min(100, (hrv/baseHRV)*70);
+  const rhrS = Math.max(0, 30 - Math.max(0, rhr-baseRHR)*2);
+  return Math.round(Math.min(100, hrvS+rhrS));
+}
+
+function calcACWR(workouts) {
+  if (!workouts.length) return { ratio:1.0, acute:0, chronic:0 };
+  const now = new Date(workouts[0].timestamp||workouts[0].date);
+  const acute = workouts.filter(w=>(now-new Date(w.timestamp||w.date))/86400000<=7).reduce((s,w)=>s+w.trimp,0);
+  const chronic = workouts.filter(w=>(now-new Date(w.timestamp||w.date))/86400000<=28).reduce((s,w)=>s+w.trimp,0)/4||1;
+  return { ratio:Math.round((acute/chronic)*100)/100, acute:Math.round(acute), chronic:Math.round(chronic) };
+}
+
+// ═══════════ RENDER ALL ═══════════
+function renderAll(w) {
+  if (!w) return;
+  const isPadel = w.type.toLowerCase().includes('padel') || w.type.toLowerCase().includes('tennis');
+  const recovery = calcRecovery(w.hrv_morning, w.resting_hr);
+  const acwr = calcACWR(allWorkouts.length ? allWorkouts : [w]);
+  const zones = w.zones || estimateZones(w.avg_hr, w.max_hr);
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="grid-4 fade-up" id="top-stats"></div>
+    <div class="grid-2 fade-up">
+      <div class="card" id="hr-curve-card">
+        <div class="card-accent-line" style="background:var(--accent)"></div>
+        <div class="card-title">HR-Verlauf während Training</div>
+        <div class="card-sub">Herzfrequenz · sekündlich · Intensitätszonen</div>
+        <canvas id="hr-curve" height="160"></canvas>
+        ${isPadel ? '<div class="padel-insight" id="padel-insight" style="margin-top:12px"></div>' : ''}
+      </div>
+      <div class="card" id="hrr-card">
+        <div class="card-accent-line" style="background:var(--green)"></div>
+        <div class="card-title">Heart Rate Recovery</div>
+        <div class="card-sub">Erholungsrate nach Training · Fitnessindikator #1</div>
+        <canvas id="hrr-curve" height="120"></canvas>
+        <div id="hrr-detail" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div class="grid-3 fade-up">
+      <div class="card" id="recovery-card">
+        <div class="card-accent-line" style="background:var(--blue)"></div>
+        <div class="card-title">Recovery Score</div>
+        <div class="card-sub">HRV + Ruhepuls Analyse</div>
+        <div class="recovery-wrap" id="rec-wrap"></div>
+        ${w.resp_rate || w.wrist_temp_delta ? '<div id="vitals-box" style="margin-top:10px"></div>' : ''}
+      </div>
+      <div class="card" id="zones-card">
+        <div class="card-accent-line" style="background:var(--orange)"></div>
+        <div class="card-title">HR-Intensitätszonen</div>
+        <div class="card-sub">Zeitverteilung Z1–Z5</div>
+        <div id="zones-display"></div>
+        <canvas id="zones-donut" height="120"></canvas>
+      </div>
+      <div class="card" id="sleep-card">
+        <div class="card-accent-line" style="background:var(--purple)"></div>
+        <div class="card-title">Schlaf vor Training</div>
+        <div class="card-sub">Qualität · Phasen · Recovery-Einfluss</div>
+        <div id="sleep-display"></div>
+      </div>
+    </div>
+    <div class="grid-2 fade-up">
+      <div class="card">
+        <div class="card-accent-line" style="background:var(--green)"></div>
+        <div class="card-title">Belastungssteuerung ACWR</div>
+        <div class="card-sub">Acute:Chronic Workload Ratio · Übertraining-Prävention</div>
+        <div id="load-display"></div>
+      </div>
+      <div class="card">
+        <div class="card-accent-line" style="background:var(--accent)"></div>
+        <div class="card-title">Fitness Score</div>
+        <div class="card-sub">HRV-Trend · HRR · HR-Effizienz kombiniert</div>
+        <div class="fitness-score-wrap" id="fitness-display"></div>
+      </div>
+    </div>
+    <div class="card fade-up">
+      <div class="card-accent-line" style="background:var(--purple)"></div>
+      <div class="card-title">🤖 AI Coach Analyse</div>
+      <div class="card-sub">Powered by Claude · Persönliches Workout-Feedback</div>
+      <div class="ai-box" id="ai-box">
+        <div class="ai-header"><span class="ai-tag">Claude AI</span></div>
+        <span class="ai-thinking">Klicke auf "Analyse starten" für dein persönliches Coaching-Feedback...</span>
+      </div>
+      <button class="ai-btn" id="ai-btn" onclick="runAICoach()">✦ Analyse starten</button>
+    </div>
+    <div class="card fade-up">
+      <div class="card-title">Alle Trainingseinheiten</div>
+      <div class="card-sub" style="margin-bottom:14px">Chronologisch · neueste zuerst</div>
+      <div class="workout-list" id="wl"></div>
+    </div>
+  `;
+
+  renderTopStats(w, recovery, acwr);
+  renderHRCurve(w);
+  renderHRR(w);
+  renderRecovery(w, recovery);
+  renderZones(zones);
+  renderSleep(w.sleep_prev);
+  renderLoad(acwr, w);
+  renderFitnessScore(w, recovery);
+  if (isPadel) renderPadelInsight(w);
+  renderWorkoutList();
+}
+
+// ═══════════ TOP STATS ═══════════
+function renderTopStats(w, recovery, acwr) {
+  const hrColor = w.avg_hr >= 165 ? 'var(--red)' : w.avg_hr >= 145 ? 'var(--orange)' : w.avg_hr >= 125 ? 'var(--accent)' : 'var(--green)';
+  const recColor = !recovery ? 'var(--muted)' : recovery>=70 ? 'var(--green)' : recovery>=45 ? 'var(--orange)' : 'var(--red)';
+  const dur = `${Math.floor(w.duration_min/60)}h ${w.duration_min%60}m`;
+
+  document.getElementById('top-stats').innerHTML = `
+    <div class="stat-chip">
+      <div class="stat-chip-label">Dauer</div>
+      <div class="stat-chip-val">${dur}</div>
+      <div class="stat-chip-sub">${w.type}</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-label">Ø Herzfrequenz</div>
+      <div class="stat-chip-val" style="color:${hrColor}">${w.avg_hr}<span class="stat-chip-unit">bpm</span></div>
+      <div class="stat-chip-sub">Max ${w.max_hr} bpm</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-label">Kalorien</div>
+      <div class="stat-chip-val">${w.calories}<span class="stat-chip-unit">kcal</span></div>
+      <div class="stat-chip-sub">TRIMP: ${w.trimp}</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-label">Recovery</div>
+      <div class="stat-chip-val" style="color:${recColor}">${recovery ?? '—'}<span class="stat-chip-unit">${recovery?'%':''}</span></div>
+      <div class="stat-chip-sub">${!recovery?'Keine HRV-Daten':recovery>=70?'🟢 Bereit':recovery>=45?'🟡 Moderat':'🔴 Erholen'}</div>
+    </div>
+  `;
+}
+
+// ═══════════ HR CURVE ═══════════
+function renderHRCurve(w) {
+  const canvas = document.getElementById('hr-curve');
+  if (!canvas || !w.hr_series || w.hr_series.length < 2) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth, H = 160;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+
+  const hrs = w.hr_series;
+  const maxV = Math.max(...hrs.map(h=>h.bpm)) + 8;
+  const minV = Math.min(...hrs.map(h=>h.bpm)) - 8;
+  const range = maxV - minV;
+  const pad = { l:36, r:10, t:10, b:20 };
+  const pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+  // Zone background bands
+  const zonePcts = [0,.60,.70,.80,.90,1.0];
+  const zoneColors = ['rgba(59,130,246,.06)','rgba(34,197,94,.06)','rgba(245,158,11,.06)','rgba(249,115,22,.06)','rgba(239,68,68,.06)'];
+  zonePcts.slice(0,-1).forEach((z,i) => {
+    const y1 = pad.t + ph - ((zonePcts[i+1]*CFG.maxHR - minV)/range)*ph;
+    const y2 = pad.t + ph - ((z*CFG.maxHR - minV)/range)*ph;
+    ctx.fillStyle = zoneColors[i];
+    ctx.fillRect(pad.l, Math.max(pad.t, y1), pw, Math.min(y2-y1, ph));
+  });
+
+  // Grid lines
+  ctx.strokeStyle = '#252540'; ctx.lineWidth = .5;
+  [140,150,160,170].forEach(v => {
+    if (v < minV || v > maxV) return;
+    const y = pad.t + ph - ((v-minV)/range)*ph;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    ctx.fillStyle='#6060a0'; ctx.font='9px DM Mono';
+    ctx.fillText(v, 2, y+3);
+  });
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H);
+  grad.addColorStop(0, 'rgba(232,255,71,.25)');
+  grad.addColorStop(1, 'rgba(232,255,71,0)');
+  ctx.beginPath();
+  hrs.forEach((p,i) => {
+    const x = pad.l + (p.t/(hrs[hrs.length-1].t))*pw;
+    const y = pad.t + ph - ((p.bpm-minV)/range)*ph;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.lineTo(pad.l+pw, pad.t+ph); ctx.lineTo(pad.l, pad.t+ph);
+  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  // Line — colored by zone
+  for (let i=1; i<hrs.length; i++) {
+    const p = hrs[i-1], q = hrs[i];
+    const x1=pad.l+(p.t/hrs[hrs.length-1].t)*pw, y1=pad.t+ph-((p.bpm-minV)/range)*ph;
+    const x2=pad.l+(q.t/hrs[hrs.length-1].t)*pw, y2=pad.t+ph-((q.bpm-minV)/range)*ph;
+    const pct = q.bpm/CFG.maxHR;
+    ctx.strokeStyle = pct>.90?'#ef4444':pct>.80?'#f97316':pct>.70?'#f59e0b':pct>.60?'#22c55e':'#3b82f6';
+    ctx.lineWidth = 1.8; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+
+  // X-axis time labels
+  ctx.fillStyle='#6060a0'; ctx.font='9px DM Mono'; ctx.textAlign='center';
+  const totalSec = hrs[hrs.length-1].t;
+  [0,.25,.5,.75,1].forEach(p => {
+    const min = Math.round((totalSec*p)/60);
+    const x = pad.l + p*pw;
+    ctx.fillText(`${min}'`, x, H-4);
+  });
+}
+
+// ═══════════ HRR CURVE ═══════════
+function renderHRR(w) {
+  const el = document.getElementById('hrr-detail');
+
+  const hrr1 = w.hrr_1min, hrr2 = w.hrr_2min;
+  const rating = hrr1>=25?{t:'Ausgezeichnet',c:'var(--green)'}:hrr1>=18?{t:'Gut',c:'var(--accent)'}:hrr1>=12?{t:'Durchschnitt',c:'var(--orange)'}:{t:'Verbesserungsbedarf',c:'var(--red)'};
+
+  if (el) el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">nach 1 Min</div>
+        <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:${rating.c}">-${hrr1}</div>
+        <div style="font-size:9px;color:var(--muted)">bpm Drop</div>
+      </div>
+      <div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">nach 2 Min</div>
+        <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800">-${hrr2}</div>
+        <div style="font-size:9px;color:var(--muted)">bpm Drop</div>
+      </div>
+      <div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Bewertung</div>
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:800;color:${rating.c};margin-top:4px">${rating.t}</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px">
+      HRR ist der stärkste einzelne Fitnessindikator. >25 bpm/min = exzellente kardiovaskuläre Fitness.
+    </div>
+  `;
+
+  // HRR canvas
+  const canvas = document.getElementById('hrr-curve');
+  if (!canvas || !w.hrr_series || w.hrr_series.length < 2) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth, H = 120;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+
+  const pts = w.hrr_series;
+  const maxV = pts[0].bpm+5, minV = Math.min(...pts.map(p=>p.bpm))-5;
+  const range = maxV-minV;
+  const pad={l:36,r:10,t:8,b:18};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+
+  // Gradient
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(71,255,140,.2)');
+  grad.addColorStop(1,'rgba(71,255,140,0)');
+  ctx.beginPath();
+  pts.forEach((p,i)=>{
+    const x=pad.l+(p.t/120)*pw, y=pad.t+ph-((p.bpm-minV)/range)*ph;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.lineTo(pad.l+pw,pad.t+ph); ctx.lineTo(pad.l,pad.t+ph);
+  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  ctx.beginPath();
+  pts.forEach((p,i)=>{
+    const x=pad.l+(p.t/120)*pw, y=pad.t+ph-((p.bpm-minV)/range)*ph;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='#47ff8c'; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.stroke();
+
+  // Annotations
+  ctx.fillStyle='#6060a0'; ctx.font='9px DM Mono'; ctx.textAlign='center';
+  ['0s','30s','60s','90s','120s'].forEach((lbl,i)=>{
+    ctx.fillText(lbl, pad.l+(i/4)*pw, H-3);
+  });
+  // Mark 1min & 2min
+  [60,120].forEach(t=>{
+    const x=pad.l+(t/120)*pw;
+    ctx.strokeStyle='rgba(71,255,140,.3)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+ph); ctx.stroke();
+    ctx.setLineDash([]);
+    const pt=pts.find(p=>p.t>=t)||pts[pts.length-1];
+    const y=pad.t+ph-((pt.bpm-minV)/range)*ph;
+    ctx.fillStyle='#47ff8c'; ctx.font='bold 9px DM Mono';
+    ctx.fillText(pt.bpm+'bpm', x, y-5);
+  });
+  ctx.fillStyle='#6060a0'; ctx.font='9px DM Mono'; ctx.textAlign='left';
+  [pts[0].bpm, minV+5].forEach(v=>{
+    const y=pad.t+ph-((v-minV)/range)*ph;
+    ctx.fillText(v,2,y+3);
+  });
+}
+
+// ═══════════ RECOVERY ═══════════
+function renderRecovery(w, score) {
+  const color = !score?'var(--muted)':score>=70?'var(--green)':score>=45?'var(--orange)':'var(--red)';
+  const circ = 2*Math.PI*42;
+  const filled = score ? (score/100)*circ : 0;
+
+  document.getElementById('rec-wrap').innerHTML = `
+    <div class="ring-outer">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="42" fill="none" stroke="var(--s3)" stroke-width="8"/>
+        <circle cx="55" cy="55" r="42" fill="none" stroke="${color}" stroke-width="8"
+          stroke-dasharray="${filled} ${circ}" stroke-linecap="round"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-val" style="color:${color}">${score??'—'}</div>
+        <div class="ring-lbl">Recovery</div>
+      </div>
+    </div>
+    <div class="rec-rows">
+      <div class="rec-row"><span class="rec-k">HRV</span><span>${w.hrv_morning ? Math.round(w.hrv_morning)+' ms' : '—'}</span></div>
+      <div class="rec-row"><span class="rec-k">Ruhepuls</span><span>${w.resting_hr ? Math.round(w.resting_hr)+' bpm' : '—'}</span></div>
+      <div class="rec-row"><span class="rec-k">VO2max</span><span>${w.vo2max ?? '—'}</span></div>
+      <div class="rec-row"><span class="rec-k">Status</span><span style="color:${color}">${!score?'Keine Daten':score>=70?'🟢 Bereit':score>=45?'🟡 Moderat':'🔴 Erholen'}</span></div>
+      <div class="rec-row"><span class="rec-k">Empfehlung</span><span style="font-size:10px">${!score?'—':score>=70?'Intensiv ok':score>=45?'Mittlere Intensität':'Ruhetag'}</span></div>
+    </div>
+  `;
+
+  // Vitals alert
+  const vb = document.getElementById('vitals-box');
+  if (!vb) return;
+  const alerts = [];
+  if (w.resp_rate > 16) alerts.push(`Atemfrequenz erhöht: ${w.resp_rate}/min (normal: 12–16)`);
+  if (w.wrist_temp_delta > 0.5) alerts.push(`Körpertemp. +${w.wrist_temp_delta}°C über Baseline`);
+  vb.innerHTML = alerts.length
+    ? `<div class="vitals-alert">⚠ ${alerts.join(' · ')}</div>`
+    : `<div style="font-size:10px;color:var(--green);margin-top:6px">✓ Atemfrequenz ${w.resp_rate}/min · Temp. ${w.wrist_temp_delta>0?'+':''}${w.wrist_temp_delta}°C — alles im Normalbereich</div>`;
+}
+
+// ═══════════ ZONES ═══════════
+function renderZones(zones) {
+  const ZONES = [
+    {n:'Z1 Regen.',c:'#3b82f6'},{n:'Z2 Ausdauer',c:'#22c55e'},
+    {n:'Z3 Aerob',c:'#f59e0b'},{n:'Z4 Schwelle',c:'#f97316'},{n:'Z5 Anaerob',c:'#ef4444'}
+  ];
+  const total = zones.reduce((a,b)=>a+b,0)||1;
+  const pct = zones.map(z=>Math.round(z/total*100));
+
+  document.getElementById('zones-display').innerHTML = `
+    <div class="zones-bar">
+      ${ZONES.map((z,i)=>`<div class="zone-seg" style="flex:${pct[i]};background:${z.c}"></div>`).join('')}
+    </div>
+    <div class="zones-leg">
+      ${ZONES.map((z,i)=>`<div class="zone-item"><div class="zone-dot" style="background:${z.c}"></div>${z.n}: <strong>${pct[i]}%</strong></div>`).join('')}
+    </div>
+  `;
+
+  // Donut
+  const canvas = document.getElementById('zones-donut');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio||1;
+  const sz = Math.min(canvas.offsetWidth, 200);
+  canvas.width = sz*dpr; canvas.height = sz*dpr;
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  const cx=sz/2, cy=sz/2, r=sz/2-12;
+  let angle=-Math.PI/2;
+  pct.forEach((p,i)=>{
+    if(!p) return;
+    const slice=(p/100)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,angle,angle+slice); ctx.closePath();
+    ctx.fillStyle=ZONES[i].c; ctx.fill();
+    ctx.strokeStyle='#10101c'; ctx.lineWidth=2; ctx.stroke();
+    angle+=slice;
+  });
+  ctx.beginPath(); ctx.arc(cx,cy,r*.55,0,Math.PI*2);
+  ctx.fillStyle='#10101c'; ctx.fill();
+  ctx.fillStyle='#f0f0fa'; ctx.font=`bold ${sz*.12}px Syne`; ctx.textAlign='center';
+  ctx.fillText(pct[2]+pct[3]+'%',cx,cy+3);
+  ctx.fillStyle='#6060a0'; ctx.font=`${sz*.07}px DM Mono`;
+  ctx.fillText('Z3+Z4',cx,cy+sz*.1);
+}
+
+// ═══════════ SLEEP ═══════════
+function renderSleep(sleep) {
+  const el = document.getElementById('sleep-display');
+  if (!el) return;
+  if (!sleep) { el.innerHTML='<div class="empty" style="padding:20px">Keine Schlafdaten verfügbar</div>'; return; }
+
+  const total = sleep.total_h, rem = sleep.rem_h, deep = sleep.deep_h;
+  const light = Math.max(0, total - rem - deep - (sleep.awake_min/60));
+  const awakeH = sleep.awake_min/60;
+  const quality = rem>=1.5&&deep>=1.0&&total>=7.5?'Ausgezeichnet':rem>=1.0&&deep>=0.8&&total>=6.5?'Gut':total>=6?'Mäßig':'Schlecht';
+  const qColor = quality==='Ausgezeichnet'?'var(--green)':quality==='Gut'?'var(--accent)':quality==='Mäßig'?'var(--orange)':'var(--red)';
+  const totalMin = total*60;
+
+  el.innerHTML = `
+    <div style="font-family:Syne,sans-serif;font-size:26px;font-weight:800;margin-bottom:2px">
+      ${Math.floor(total)}h ${Math.round((total%1)*60)}m
+      <span style="font-size:13px;color:${qColor};margin-left:8px">${quality}</span>
+    </div>
+    <div class="sleep-stages">
+      <div class="sleep-seg" style="flex:${deep/totalMin*60};background:#3b82f6" title="Tief ${deep}h"></div>
+      <div class="sleep-seg" style="flex:${rem/totalMin*60};background:#b347ff" title="REM ${rem}h"></div>
+      <div class="sleep-seg" style="flex:${light/totalMin*60};background:#6060a0" title="Leicht"></div>
+      <div class="sleep-seg" style="flex:${awakeH/totalMin*60};background:#ff4747" title="Wach"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:10px">
+      ${[['#3b82f6','Tief',deep+'h'],['#b347ff','REM',rem+'h'],['#6060a0','Leicht',light.toFixed(1)+'h'],['#ff4747','Wach',sleep.awake_min+'min']].map(([c,l,v])=>`
+        <div style="display:flex;align-items:center;gap:5px;color:var(--muted2)">
+          <div style="width:7px;height:7px;background:${c};border-radius:50%"></div>${l}: <strong style="color:var(--text)">${v}</strong>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted2)">
+      ${total>=7.5?'✓ Optimale Schlafdauer für Regeneration':`⚠ ${(7.5-total).toFixed(1)}h unter empfohlenem Ziel (7.5h)`}
+    </div>
+  `;
+}
+
+// ═══════════ LOAD ═══════════
+function renderLoad(acwr, w) {
+  const r = acwr.ratio;
+  const pct = Math.min(100, (r/2.0)*100);
+  const color = r<=0.8?'var(--muted)':r<=1.3?'var(--green)':r<=1.5?'var(--orange)':'var(--red)';
+  const msg = r<0.8?'Training kann gesteigert werden':r<=1.3?'Optimale Trainingszone':r<=1.5?'Erhöht — Intensität reduzieren':'Überbelastungsrisiko — Ruhetag!';
+
+  document.getElementById('load-display').innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:12px">
+      <div style="font-family:Syne,sans-serif;font-size:42px;font-weight:800;color:${color};line-height:1">${r}</div>
+      <div style="font-size:11px;color:${color};padding-bottom:8px">${msg}</div>
+    </div>
+    <div class="load-bar">
+      <div class="load-fill" style="width:${pct}%;background:${color}"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px">
+      <span>&lt;0.8 wenig</span><span style="color:var(--green)">0.8–1.3 optimal</span><span style="color:var(--orange)">1.3–1.5 hoch</span><span style="color:var(--red)">&gt;1.5 risiko</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+      <div style="background:var(--s2);border-radius:10px;padding:12px">
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Akute Last (7 Tage)</div>
+        <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700">${acwr.acute} <span style="font-size:11px;color:var(--muted)">TRIMP</span></div>
+      </div>
+      <div style="background:var(--s2);border-radius:10px;padding:12px">
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Chron. Last (28 Tage Ø)</div>
+        <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700">${acwr.chronic} <span style="font-size:11px;color:var(--muted)">TRIMP</span></div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════ FITNESS SCORE ═══════════
+function renderFitnessScore(w, recovery) {
+  const hrrScore = w.hrr_1min ? Math.min(100, Math.round((w.hrr_1min/35)*100)) : 0;
+  const hrvScore = w.hrv_morning ? Math.min(100, Math.round((w.hrv_morning/65)*100)) : 0;
+  const effScore = w.avg_hr && w.vo2max ? Math.min(100, Math.round((w.vo2max/60)*100)) : 0;
+  const recScore = recovery || 0;
+  const total = Math.round((hrrScore*.30 + hrvScore*.30 + effScore*.20 + recScore*.20));
+  const totalColor = total>=75?'var(--green)':total>=55?'var(--accent)':total>=40?'var(--orange)':'var(--red)';
+
+  const bars = [
+    ['HRR (Erholungsrate)', hrrScore, 'var(--green)', '30%'],
+    ['HRV Morgen-Wert', hrvScore, 'var(--blue)', '30%'],
+    ['Kardio Fitness (VO2)', effScore, 'var(--accent)', '20%'],
+    ['Recovery Score', recScore, 'var(--purple)', '20%'],
+  ];
+
+  document.getElementById('fitness-display').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+      <div style="font-family:Syne,sans-serif;font-size:48px;font-weight:800;color:${totalColor};line-height:1">${total}</div>
+      <div>
+        <div style="font-size:12px;color:var(--text)">Fitness Score</div>
+        <div style="font-size:10px;color:${totalColor}">${total>=75?'Sehr gut':total>=55?'Gut':total>=40?'Aufbauphase':'Verbesserungspotential'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px">HRR·HRV·VO2·Recovery</div>
+      </div>
+    </div>
+    ${bars.map(([l,v,c,w])=>`
+      <div class="fs-row">
+        <div class="fs-label">${l} <span style="font-size:9px;color:var(--muted)">(${w})</span></div>
+        <div class="fs-bar-wrap"><div class="fs-bar" style="width:${v}%;background:${c}"></div></div>
+        <div class="fs-val" style="color:${c}">${v}</div>
+      </div>`).join('')}
+    <div style="font-size:10px;color:var(--muted);margin-top:10px">
+      Dieser Score verbessert sich über Wochen durch konsistentes Training. Ziel: >75.
+    </div>
+  `;
+}
+
+// ═══════════ PADEL INSIGHT ═══════════
+function renderPadelInsight(w) {
+  const el = document.getElementById('padel-insight');
+  if (!el || !w.hr_series || w.hr_series.length < 10) return;
+
+  // Analyze interval structure
+  const hrs = w.hr_series;
+  const avgHR = w.avg_hr;
+  let spikes = 0, quickRecoveries = 0;
+
+  for (let i=1; i<hrs.length-1; i++) {
+    if (hrs[i].bpm > avgHR+15 && hrs[i-1].bpm < avgHR+10) spikes++;
+    if (hrs[i].bpm > avgHR+10 && hrs[i+1] && hrs[i+1].bpm < hrs[i].bpm-5) quickRecoveries++;
+  }
+
+  const driftStart = hrs.slice(0, Math.floor(hrs.length/4)).reduce((s,p)=>s+p.bpm,0)/Math.max(1,Math.floor(hrs.length/4));
+  const driftEnd = hrs.slice(-Math.floor(hrs.length/4)).reduce((s,p)=>s+p.bpm,0)/Math.max(1,Math.floor(hrs.length/4));
+  const drift = Math.round(driftEnd - driftStart);
+
+  el.innerHTML = `
+    <strong>🎾 Padel-Analyse:</strong>
+    ~${spikes} Intensitätsspitzen erkannt · ${drift > 5 ? `HR-Drift +${drift} bpm (Ermüdung sichtbar)` : 'Kein signifikanter HR-Drift (gute Ausdauer)'} ·
+    ${quickRecoveries > spikes*0.6 ? 'Gute Zwischen-Punkt-Erholung' : 'Erholung zwischen Punkten könnte besser sein'}
+  `;
+}
+
+// ═══════════ WORKOUT LIST ═══════════
+function renderWorkoutList() {
+  const el = document.getElementById('wl');
+  if (!el) return;
+  const list = allWorkouts.length ? allWorkouts : (currentWorkout ? [currentWorkout] : []);
+  if (!list.length) { el.innerHTML='<div class="empty">Keine weiteren Workouts geladen</div>'; return; }
+
+  el.innerHTML = list.map((w,i) => {
+    const isPadel = w.type.toLowerCase().includes('padel')||w.type.toLowerCase().includes('tennis');
+    const isStr = w.type.toLowerCase().includes('kraft')||w.type.toLowerCase().includes('strength')||w.type.toLowerCase().includes('functional');
+    const badgeClass = isPadel?'badge-p':isStr?'badge-s':'badge-o';
+    const badgeLabel = isPadel?'Padel':isStr?'Kraft':'Sonstig';
+    const hrColor = w.avg_hr>=165?'var(--red)':w.avg_hr>=145?'var(--orange)':'var(--accent)';
+    const isActive = currentWorkout && w.timestamp === currentWorkout.timestamp;
+    return `
+      <div class="wl-item ${isActive?'active':''}" onclick="selectWorkoutFromList(${i})">
+        <span class="wl-badge ${badgeClass}">${badgeLabel}</span>
+        <div class="wl-meta">
+          <div class="wl-date">${w.date || w.timestamp?.slice(0,16).replace('T',' ')}</div>
+          <div class="wl-stats">${w.duration_min}min · ${w.calories} kcal · TRIMP ${w.trimp} · HRR -${w.hrr_1min}bpm/min</div>
+        </div>
+        <div class="wl-hr" style="color:${hrColor}">${w.avg_hr}<small style="font-size:10px;color:var(--muted)"> bpm</small></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectWorkoutFromList(i) {
+  const list = allWorkouts.length ? allWorkouts : [currentWorkout];
+  currentWorkout = list[i];
+  renderAll(currentWorkout);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════ AI COACH ═══════════
+async function runAICoach() {
+  const btn = document.getElementById('ai-btn');
+  const box = document.getElementById('ai-box');
+  if (!currentWorkout) return;
+  btn.disabled = true; btn.textContent = '✦ Analysiert...';
+  box.innerHTML = '<div class="ai-header"><span class="ai-tag">Claude AI</span></div><span class="ai-thinking">Analysiere dein Training...</span>';
+
+  const w = currentWorkout;
+  const prompt = `Du bist ein erfahrener Sportcoach und analysierst folgendes Training eines ambitionierten Amateur-Padelspielers (Alter: ${CFG.age} Jahre, Max HR: ${CFG.maxHR} bpm).
+
+Training:
+- Typ: ${w.type}
+- Datum: ${w.date || w.timestamp}
+- Dauer: ${w.duration_min} Minuten
+- Ø Herzfrequenz: ${w.avg_hr} bpm (Max: ${w.max_hr} bpm)
+- Kalorien: ${w.calories} kcal
+- TRIMP (Belastungsindex): ${w.trimp}
+- HR-Zonen: Z1:${w.zones?.[0]}% Z2:${w.zones?.[1]}% Z3:${w.zones?.[2]}% Z4:${w.zones?.[3]}% Z5:${w.zones?.[4]}%
+- Heart Rate Recovery: -${w.hrr_1min} bpm in Minute 1, -${w.hrr_2min} bpm in Minute 2
+- HRV morgens: ${w.hrv_morning || '–'} ms
+- Ruhepuls: ${w.resting_hr || '–'} bpm
+- VO2max: ${w.vo2max || '–'}
+- Schlaf davor: ${w.sleep_prev ? `${w.sleep_prev.total_h}h gesamt, ${w.sleep_prev.deep_h}h Tief, ${w.sleep_prev.rem_h}h REM` : '–'}
+- Atemfrequenz: ${w.resp_rate || '–'}/min
+- Körpertemperatur-Delta: ${w.wrist_temp_delta || '–'}°C
+
+Gib eine präzise Coaching-Analyse (max. 180 Wörter) auf Deutsch:
+1. Was war gut an diesem Training?
+2. Was sollte verbessert werden?
+3. Empfehlung für das nächste Training
+Sei konkret, sachlich und motivierend. Keine Aufzählungszeichen, fließender Text.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Keine Analyse verfügbar.';
+    box.innerHTML = `<div class="ai-header"><span class="ai-tag">Claude AI</span><span style="font-size:10px;color:var(--muted);margin-left:8px">${new Date().toLocaleTimeString('de-AT')}</span></div>${text.split('\n').map(l=>l.trim()).filter(Boolean).join('<br>')}`;
+  } catch(e) {
+    box.innerHTML = `<div class="ai-header"><span class="ai-tag">Claude AI</span></div><span style="color:var(--orange)">⚠ API nicht erreichbar. Stelle sicher dass du claude.ai verwendest oder die API konfiguriert ist.</span>`;
+  }
+  btn.disabled=false; btn.textContent='✦ Neu analysieren';
+}
+
+// ═══════════ HELPERS ═══════════
+function showApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function showError(msg) {
+  document.getElementById('main-content').innerHTML = `
+    <div class="card"><div style="color:var(--red);font-size:13px">⚠ ${msg}</div>
+    <div style="color:var(--muted);font-size:11px;margin-top:8px">GitHub-Konfiguration prüfen: Username, Repo-Name und Token korrekt?</div></div>`;
+}
+
+// ═══════════ INIT ═══════════
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('pp_cfg');
+  if (saved) {
+    try {
+      CFG = JSON.parse(saved);
+      document.getElementById('cfg-user').value = CFG.user;
+      document.getElementById('cfg-repo').value = CFG.repo;
+      document.getElementById('cfg-token').value = CFG.token;
+      document.getElementById('cfg-age').value = CFG.age;
+      document.getElementById('cfg-maxhr').value = CFG.maxHR;
+    } catch(e) {}
+  }
+});
+</script>
+</body>
+</html>
